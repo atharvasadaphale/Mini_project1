@@ -1,0 +1,219 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.Random;
+
+public class gamePanel extends JPanel implements KeyListener, ActionListener {
+    ImageIcon snaketitle=new ImageIcon(getClass().getResource("snaketitle.jpg"));
+    ImageIcon downmouth=new ImageIcon(getClass().getResource("downmouth.png"));
+    ImageIcon upmouth=new ImageIcon(getClass().getResource("upmouth.png"));
+    ImageIcon leftmouth=new ImageIcon(getClass().getResource("leftmouth.png"));
+    ImageIcon rightmouth=new ImageIcon(getClass().getResource("rightmouth.png"));
+    ImageIcon fruit=new ImageIcon(getClass().getResource("enemy.png"));
+    ImageIcon snakebody=new ImageIcon(getClass().getResource("snakeimage.png"));
+
+    int [] xposn={25,50,75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500,525,550,575,600,625,650,675,700,725,750,775,800,825,850};
+    int [] yposn={75,100,125,150,175,200,225,250,275,300,325,350,375,400,425,450,475,500,525,550,575,600,625};
+
+    Random position= new Random();
+    int xfruit=150, yfruit=200;
+    int [] snakexlength = new int [750];
+    int [] snakeylength = new int [750];
+
+    boolean left=false;
+    boolean right=true;
+    boolean up=false;
+    boolean down=false;
+    boolean gameover=false;
+    int move=0;
+    int lengthofsnake=3;
+    int score=0;
+    Timer timer;
+    int delay=150;
+    gamePanel(){
+        addKeyListener(this);
+        setFocusable(true);
+        timer= new Timer(delay, this);
+        timer.start();
+    }
+    public void newposition(){
+        xfruit=xposn[position.nextInt(34)];
+        yfruit=yposn[position.nextInt(23)];
+        for(int i=lengthofsnake-1;i>0;i--){
+            if(snakexlength[i]==xfruit && snakeylength[i]==yfruit){
+                newposition();
+            }
+        }
+    }
+    public void collision(){
+        if(snakexlength[0]==xfruit && snakeylength[0]==yfruit){
+            newposition();
+            lengthofsnake++;
+            score++;
+            snakexlength[lengthofsnake-1]=snakexlength[lengthofsnake-2];
+            snakeylength[lengthofsnake-1]=snakeylength[lengthofsnake-2];
+
+        }
+    }
+    public void collisionbody(){
+        for(int i=lengthofsnake-1;i>0;i--){
+            if(snakexlength[i]==snakexlength[0] && snakeylength[i]==snakeylength[0]){
+                timer.stop();
+                gameover=true;
+            }
+        }
+    }
+    public void restart(){
+        gameover=false;
+        move=0;
+        score=0;
+        lengthofsnake=3;
+        left=false;
+        right=true;
+        up=false;
+        down=false;
+        timer.start();
+        repaint();
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g);
+        g.setColor(Color.white);
+        g.drawRect(24, 10, 851, 55);
+        g.drawRect(24, 74, 851, 576);//rectangles
+
+        snaketitle.paintIcon(this, g, 25, 11);
+        g.setColor(Color.BLACK);
+        g.fillRect(25, 75, 851, 576);
+        if (move == 0) {
+            snakexlength[0] = 100;
+            snakexlength[1] = 75;
+            snakexlength[2] = 50;
+
+            snakeylength[0] = 100;
+            snakeylength[1] = 100;
+            snakeylength[2] = 100;
+            move++;
+        }
+        if (left) {
+            leftmouth.paintIcon(this, g, snakexlength[0], snakeylength[0]);
+        }
+        if (right) {
+            rightmouth.paintIcon(this, g, snakexlength[0], snakeylength[0]);
+        }
+        if (up) {
+            upmouth.paintIcon(this, g, snakexlength[0], snakeylength[0]);
+        }
+        if (down) {
+            downmouth.paintIcon(this, g, snakexlength[0], snakeylength[0]);
+        }
+        for (int i = 1; i <= lengthofsnake; i++) {
+            snakebody.paintIcon(this, g, snakexlength[i], snakeylength[i]);
+        }
+        fruit.paintIcon(this, g, xfruit, yfruit);
+        if (gameover) {
+            g.setColor(Color.white);
+            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
+            g.drawString("GAME OVER", 300, 300);
+            g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
+            g.drawString("Press space to restrat", 330, 360);
+        }
+        g.setColor(Color.white);
+        g.setFont(new Font("Arial", Font.PLAIN, 15));
+        g.drawString("Score :"+score, 750, 30);
+        g.drawString("Length :"+lengthofsnake, 750, 50);
+        g.dispose();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if(e.getKeyCode()==KeyEvent.VK_SPACE && gameover){
+            restart();
+        }
+        if(e.getKeyCode()==KeyEvent.VK_LEFT &&(!right)){
+            left=true;
+            right=false;
+            up=false;
+            down=false;
+            move++;
+        }
+        if(e.getKeyCode()==KeyEvent.VK_RIGHT &&(!left)){
+            left=false;
+            right=true;
+            up=false;
+            down=false;
+            move++;
+        }
+        if(e.getKeyCode()==KeyEvent.VK_UP &&(!down)){
+            left=false;
+            right=false;
+            up=true;
+            down=false;
+            move++;
+        }
+        if(e.getKeyCode()==KeyEvent.VK_DOWN &&(!up)){
+            left=false;
+            right=false;
+            up=false;
+            down=true;
+            move++;
+        }
+        if(e.getKeyCode()==KeyEvent.VK_LEFT){
+            left=true;
+            right=false;
+            up=false;
+            down=false;
+            move++;
+        }
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        for(int i=lengthofsnake-1;i>0;i--){
+            snakexlength[i]=snakexlength[i-1];
+            snakeylength[i]=snakeylength[i-1];
+        }
+        if(left){
+            snakexlength[0]=snakexlength[0]-25;
+        }
+        if(right){
+            snakexlength[0]=snakexlength[0]+25;
+        }
+        if(down){
+            snakeylength[0]=snakeylength[0]+25;
+        }
+        if(up){
+            snakeylength[0]=snakeylength[0]-25;
+        }
+        if(snakexlength[0]>850){
+            snakexlength[0]=25;
+        }
+        if(snakexlength[0]<25){
+            snakexlength[0]=850;
+        }
+        if(snakeylength[0]>625){
+            snakexlength[0]=75;
+        }
+        if(snakeylength[0]>75){
+            snakexlength[0]=625;
+        }
+        collision();
+        collisionbody();
+        repaint();
+    }
+}
